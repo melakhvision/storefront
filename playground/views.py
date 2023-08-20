@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, F
+from django.db.models import Q, F, Func, Value
+from django.db.models.functions import Concat
 from django.db.models.aggregates import Count, Max, Min, Avg, Sum
 
 from store.models import *
@@ -86,8 +87,8 @@ def order_with_customer_in_product(request):
     return render(request, 'collection.html', {'orders': list(queryset)})
 
 
-def say_hello(request):
-    # COunt number of product diplay key value by default as "id__count" but can be chnaged as shown
+def extra_quer(request):
+   # COunt number of product diplay key value by default as "id__count" but can be chnaged as shown
     result1 = Product.objects.aggregate(count=Count('id'))
 
     # count how many order we have
@@ -109,6 +110,29 @@ def say_hello(request):
     result5 = Product.objects.filter(
         collection__id=3).aggregate(max=Max('unit_price'))
 
+    # The avrage price of products in collection 3
     result = Product.objects.filter(
         collection__id=3).aggregate(avg=Avg('unit_price'))
+
     return render(request, 'hello.html', {'result': result})
+
+
+def say_hello(request):
+
+    # Add new field in_new in our Customer table
+
+    queryset1 = Customer.objects.annotate(in_new=Value(True))
+
+    # Create full_name from from first_name and last_name fileds methode1
+    queryset2 = Customer.objects.annotate(
+        full_name=Func(F('first_name'), Value(
+            ' '), F('last_name'), function='CONCAT')
+
+    )
+
+    # Create full_name from from first_name and last_name fileds method2 - Shorter
+    # Django database functions
+    queryset = Customer.objects.annotate(
+        full_name=Concat('first_name', Value(' '), 'last_name')
+    )
+    return render(request, 'hello.html', {'result': queryset})
