@@ -16,7 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
-# hello
+
+# change admin header
+admin.site.site_header = 'Sorefront Admin'
+# change index
+admin.site.index_title = 'Admin'
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('playground/', include('playground.urls')),
