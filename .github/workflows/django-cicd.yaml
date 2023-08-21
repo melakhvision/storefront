@@ -20,6 +20,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - name: Install Ubuntu dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcurl4-openssl-dev libmysqlclient-dev libgirepository1.0-dev
+
       - name: setup python
         uses: actions/setup-python@v4
         with:
