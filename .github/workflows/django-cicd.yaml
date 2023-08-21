@@ -15,6 +15,7 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: 54fsfotelg
           MYSQL_DATABASE: storefront
+          MYSQL_OPT_SSL_ENFORCE: ssl-enforce=0
 
     steps:
       - name: checkout
