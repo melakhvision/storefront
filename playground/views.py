@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, F, Func, Value, ExpressionWrapper, DecimalField
 from django.db import transaction
-
+import json
 from django.contrib.contenttypes.models import ContentType
 from tags.models import TaggedItem
 from django.db.models.functions import Concat
@@ -232,3 +232,8 @@ def create_order(request):
         item.unit_price = 10
         item.save()
     return render(request, 'hello.html', {'result': "thiane"})
+
+
+def health_check(request):
+    # return HttpResponse(json.dumps({'response': 'running fine'}), status=200)
+    return HttpResponse('running fine', status=200)

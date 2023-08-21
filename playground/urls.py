@@ -9,6 +9,6 @@ urlpatterns = [
     # path('collection/', views.collection),
     path('collection/', views.order_with_customer_in_product),
     path('hello/', views.create_order),
-
+    path('health/', views.health_check),
 
 ]

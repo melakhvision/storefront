@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+load_dotenv()  # take environment variables from .env.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -89,10 +92,10 @@ WSGI_APPLICATION = 'storefront.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storefront',
-        'HOST': '0.0.0.0',
-        'USER': 'root',
-        'PASSWORD': '54fsfotelg'
+        'NAME': os.getenv('DB_NAME'),
+        'HOST': os.getenv('DB_HOST'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD')
     }
 }
 
