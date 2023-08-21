@@ -95,7 +95,8 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'HOST': os.getenv('DB_HOST'),
         'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD')
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'OPTIONS': {'ssl': False}
     }
 }
 
