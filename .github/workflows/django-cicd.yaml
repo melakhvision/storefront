@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0.2
+        image: mysql:latest
         ports:
           - 127.0.0.1:3306:3306
         env:
           MYSQL_ROOT_PASSWORD: 54fsfotelg
           MYSQL_DATABASE: storefront
-          MYSQL_OPT_SSL_ENFORCE: ssl-enforce=0
+          MYSQL_OPT_SSL_ENFORCE: "ssl-enforce=0"
 
     steps:
       - name: checkout
