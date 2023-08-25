@@ -48,7 +48,7 @@ jobs:
       - name: Login to Azure Contaiern Registry
         uses: docker/login-action@v2
         with:
-          registry: fastnextimage.azurecr.io
+          registry: ${{ secrets.REGISTRY_USERNAME }}.azurecr.io
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
       - name: Build and push
