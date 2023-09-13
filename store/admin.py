@@ -46,7 +46,7 @@ class CollectionAdmin(admin.ModelAdmin):
     # Define custome query for non existing fiel here example is products_count
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
-            products_count=Count('product')
+            products_count=Count('products')
         )
 # Register Product model and show field we want ## Django model admin
 

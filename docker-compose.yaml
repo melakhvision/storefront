@@ -18,9 +18,20 @@ services:
       - 3306:3306
     environment:
       - MYSQL_ROOT_PASSWORD=54fsfotelg
-      - MYSQL_DATABASE=storefront
+      - MYSQL_DATABASE=storefront2
     volumes:
-      - django_data:/var/lib/mysql
+      - django_datapai:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    expose:
+      - "40001"
+    ports:
+      - "4001:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
 
 volumes:
-  django_data:
+  django_datapai:

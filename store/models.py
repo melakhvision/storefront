@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from rest_framework import status
 
 
 class Promotion(models.Model):
@@ -28,10 +29,12 @@ class Product(models.Model):
     unit_price = models.DecimalField(
         max_digits=6,
         decimal_places=2,
+        # from `django.core.validators`
         validators=[MinValueValidator(1, message='Price of a product should be greater than 1')])
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
-    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    collection = models.ForeignKey(
+        Collection, on_delete=models.PROTECT, related_name='products')
     promotions = models.ManyToManyField(Promotion)
 
     def __str__(self) -> str:
@@ -87,7 +90,8 @@ class OrderItem(models.Model):
     # Reverse relation between order and orderitem is created by django named
     # orderitem_set
     order = models.ForeignKey(Order, on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    product = models.ForeignKey(
+        Product, on_delete=models.PROTECT, related_name='orderitems')
     quantity = models.PositiveSmallIntegerField()
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
@@ -107,3 +111,13 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+
+
+class CreatedResponse ():
+    message = 'created succesfully'
+    status = status.HTTP_201_CREATED
+
+
+class DeletedResponse ():
+    message = 'deleted succesfully'
+    status = status.HTTP_204_NO_CONTENT
