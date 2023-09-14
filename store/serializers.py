@@ -9,12 +9,13 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = ['id', 'title', 'products_count']
 
-    products_count = serializers.IntegerField()
+    products_count = serializers.IntegerField(read_only=True)
 
     # def calculate_count(self, collection: Collection):
     #     return collection.objects.aggregate(count=Count('id'))
 
 
+# custom serializer
 class PostCollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
