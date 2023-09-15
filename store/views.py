@@ -1,47 +1,65 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpRequest
+
+# django_filters need to added to INSTALLED_APPS
+from django_filters.rest_framework import DjangoFilterBackend
+
 from django.db.models.aggregates import Count
-
-# ##simple use need api_view
-# from rest_framework.decorators import api_view
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
+from rest_framework import viewsets, mixins
+from rest_framework import generics
+from rest_framework import authentication, permissions
+
+from rest_framework.decorators import action, APIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, GenericAPIView, RetrieveUpdateDestroyAPIView
-
-from rest_framework.mixins import ListModelMixin, CreateModelMixin
-
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
 
 
-from .models import Product, Collection, DeletedResponse, OrderItem
-from .serializers import ProductSerializer, CollectionSerializer, PostCollectionSerializer
+from store.filters import ProductFilter
+
+
+from .models import Cart, CartItem, Product, Collection, OrderItem, Review
+from .serializers import AddCartItemSerializer, UpdateCartItemSerializer, CartItemSerializer, CartSerializer, ProductSerializer, CollectionSerializer, ReviewSerializer
 # Create your views here.
 
 
-class ProductList(ListCreateAPIView):
+class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    # start filter and search
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ProductFilter
+    # 'PAGE_SIZE': 10 need to be added to REST_FRAMEWORK in settings.py
+    pagination_class = PageNumberPagination
+    search_fields = ['title', 'description']
+    ordering_fields = ['unit_price', 'last_update']
+    # end filter and search
 
-    def get_serializer_context(self):
-        return {'request': self.request}
+    # custom filter
+    # def get_queryset(self):
+    #     queryset = Product.objects.all()
+    #     collection_id = self.request.query_params.get('collection_id')
+    #     if collection_id is not None:
+    #         queryset = queryset.filter(collection_id=collection_id)
+    #     return queryset
 
-
-class ProductDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    # if OrderItem.objects.filter(product_id=kwargs['pk']).count() > 0 :
-
-    def delete(self, request: HttpRequest, pk):
-        product = get_object_or_404(Product, pk=pk)
+    def destroy(self, request, *args, **kwargs):
+        product = get_object_or_404(Product, pk=kwargs['pk'])
         if product.orderitems.count() > 0:
             return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            product.delete()
-            return HttpResponse({"message": "product deleted"}, status=status.HTTP_204_NO_CONTENT)
+        return super().destroy(request, *args, **kwargs)
 
 
 class CollectViewSet(ModelViewSet):
+
+    authentication_classes = [authentication.BasicAuthentication]
+    permission_classes = [permissions.IsAdminUser]
     queryset = Collection.objects.annotate(
         products_count=Count('products')).all()
     serializer_class = CollectionSerializer
@@ -51,6 +69,7 @@ class CollectViewSet(ModelViewSet):
         if collection.products.count() > 0:
             return Response({"error": "Collection cannot be delete because include some products"})
         return super().destroy(request, *args, **kwargs)
+
     # Passing custom serializer depending on methods
     # def get_serializer_class(self):
     #     if self.request.method == 'POST':
@@ -83,7 +102,7 @@ class CollectViewSet(ModelViewSet):
 #         else:
 #             collection.delete()
 #             return Response({"message": "deleted successfully"}, status=status.HTTP_200_OK)
-
+# CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
 
 # samples using (APIView)
 
@@ -98,3 +117,40 @@ class CollectViewSet(ModelViewSet):
 #         serializer.is_valid(raise_exception=True)
 #         serializer.save()
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class ReviewViewset(ModelViewSet):
+    def get_queryset(self):
+        return Review.objects.filter(product_id=self.kwargs['product_pk'])
+    serializer_class = ReviewSerializer
+
+    # getting the prodcut_id from the query params and store it
+    # use it in ReviewSerializer in serializers.py
+
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs['product_pk']}
+
+
+# Get not supported on this endpoint
+# ,
+class CartViewSet(CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
+    queryset = Cart.objects.prefetch_related('items__product').all()
+    serializer_class = CartSerializer
+
+
+class CartItemViewSet(ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart_id=self.kwargs['cart_pk']).select_related('product')
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddCartItemSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateCartItemSerializer
+        return CartItemSerializer
+
+    # store cart_id with the value with the pk we get from the query
+    # pass to the save serializer with cart_id = self.context['cart_id']
+    def get_serializer_context(self):
+        return {'cart_id': self.kwargs['cart_pk']}

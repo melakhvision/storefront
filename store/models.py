@@ -1,6 +1,10 @@
 from django.db import models
+from django.contrib import admin
+
 from django.core.validators import MinValueValidator
+from django.conf import settings
 from rest_framework import status
+from uuid import uuid4
 
 
 class Promotion(models.Model):
@@ -63,11 +67,14 @@ class Customer(models.Model):
     membership = models.CharField(
         max_length=1, choices=MEMBERSHIP_CHOICES, default=MEMBERSHIP_BRONZE)
 
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     def __str__(self) -> str:
-        return f'{self.first_name} {self.last_name}'
+        return f'{self.user.first_name} {self.user.last_name}'
 
     class Meta:
-        ordering = ['first_name', 'last_name']
+        ordering = ['user__first_name', 'user__last_name']
 
 
 class Order(models.Model):
@@ -84,6 +91,11 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+
+    class Meta:
+        permissions = [
+            ('cancel_order', 'can cancel order')
+        ]
 
 
 class OrderItem(models.Model):
@@ -104,20 +116,24 @@ class Address(models.Model):
 
 
 class Cart(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    cart = models.ForeignKey(
+        Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
 
-
-class CreatedResponse ():
-    message = 'created succesfully'
-    status = status.HTTP_201_CREATED
+    class Meta:
+        unique_together = [['cart', 'product']]
 
 
-class DeletedResponse ():
-    message = 'deleted succesfully'
-    status = status.HTTP_204_NO_CONTENT
+class Review(models.Model):
+    # related_name=review means in the Product class we have an attribute named review
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='review')
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateField(auto_now_add=True)

@@ -20,7 +20,7 @@ services:
       - MYSQL_ROOT_PASSWORD=54fsfotelg
       - MYSQL_DATABASE=storefront2
     volumes:
-      - django_datapai:/var/lib/mysql
+      - django_datapaiv2:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin
@@ -34,4 +34,4 @@ services:
       - PMA_PORT=3306
 
 volumes:
-  django_datapai:
+  django_datapaiv2:
