@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -175,4 +176,12 @@ DJOSER = {
         'current_user': 'core.serializers.CurrentUserSerializer',
 
     }
+}
+
+
+JAZZMIN_SETTINGS = {
+    # Copyright on the footer
+    "copyright": "Store Front",
+    "show_ui_builder": False
+
 }
