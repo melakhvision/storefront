@@ -75,6 +75,9 @@ class Customer(models.Model):
 
     class Meta:
         ordering = ['user__first_name', 'user__last_name']
+        permissions = [
+            ('view_history', 'can view history')
+        ]
 
 
 class Order(models.Model):
@@ -101,7 +104,8 @@ class Order(models.Model):
 class OrderItem(models.Model):
     # Reverse relation between order and orderitem is created by django named
     # orderitem_set
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    order = models.ForeignKey(
+        Order, on_delete=models.PROTECT, related_name='items')
     product = models.ForeignKey(
         Product, on_delete=models.PROTECT, related_name='orderitems')
     quantity = models.PositiveSmallIntegerField()
